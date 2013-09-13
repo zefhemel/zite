@@ -1,0 +1,13 @@
+{{define "title"}}
+Blog
+{{end}}
+{{define "body"}}
+    {{range .Parent.Children}}
+    {{if .Title }}
+    <h2><a href="{{.URL}}">{{.Title}}</a></h2>
+    {{.Content | markdown}}
+    {{end}}
+    {{end}}
+
+{{end}}
+{{include ../_base.html}}
