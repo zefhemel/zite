@@ -15,11 +15,11 @@ import (
 )
 
 var config struct {
-    Src string
-    Out string
+    Core struct {
+        Src string
+        Out string
+    }
 }
-
-
 
 type Element struct {
     Parent *Element
@@ -85,7 +85,7 @@ func readTextFile(path string) (string, error) {
 }
 
 func pathToURL(path string) string {
-    return ensureExt(path, ".html")[len(config.Src):]
+    return ensureExt(path, ".html")[len(config.Core.Src):]
 }
 
 func readFile(path string) (*Element, error) {
@@ -157,7 +157,6 @@ func readDirectory(path string) (*Element, error) {
 }
 
 func getTemplate(path string) (string, error) {
-    fmt.Println("Finding template in", path)
     templateFilename := fmt.Sprintf("%s/_template.html", path)
     if _, err := os.Stat(templateFilename); err != nil {
         return getTemplate(filepath.Dir(path))
@@ -256,21 +255,21 @@ func copyFile(source, dest string) error {
 }
 
 func stripPath(path string) string {
-    return path[len(config.Src)+1:]
+    return path[len(config.Core.Src)+1:]
 }
 
 func generate(el *Element) error {
     switch el.Type {
     case "file":
         fmt.Println("Copying", el.Path)
-        destPath := filepath.Join(config.Out, stripPath(el.Path))
+        destPath := filepath.Join(config.Core.Out, stripPath(el.Path))
         err := copyFile(el.Path, destPath)
         if err != nil {
             return err
         }
     case "page":
         fmt.Println("Rendering", el.Path)
-        destPath := ensureExt(filepath.Join(config.Out, stripPath(el.Path)), ".html")
+        destPath := ensureExt(filepath.Join(config.Core.Out, stripPath(el.Path)), ".html")
         rendered, err := renderFile(el)
         if err != nil {
             return err
@@ -291,8 +290,8 @@ func generate(el *Element) error {
 }
 
 func readConfig(path string) {
-    config.Src = "src"
-    config.Out = "www"
+    config.Core.Src = "src"
+    config.Core.Out = "www"
 
     configFile := fmt.Sprintf("%s/zite.ini", path)
 
@@ -308,7 +307,7 @@ func readConfig(path string) {
 
 func main() {
     readConfig(".")
-    dirEl, err := readDirectory(config.Src)
+    dirEl, err := readDirectory(config.Core.Src)
     if err != nil {
         panic(err)
     }
